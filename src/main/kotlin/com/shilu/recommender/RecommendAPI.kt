@@ -10,12 +10,16 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 class RecommendAPI(ipBlocks: String?) {
     private val userAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko"
+    private val cookie = "PREF=hl="
     private val dataRegex = Regex("(window\\[\"ytInitialData\"]|var ytInitialData)\\s*=\\s*(.*);")
     private val requester: Requester = Requester(ipBlocks)
 
-    suspend fun retrieveRecommends(url: String, timeout: Long = 5000L): List<Recommendation> {
+    suspend fun retrieveRecommends(url: String, timeout: Long = 5000L, language: String = "en"): List<Recommendation> {
         val body = withTimeoutOrNull(timeout) {
-            requester.get(url, mapOf("User-Agent" to userAgent))
+            requester.get(url, mapOf(
+                    "User-Agent" to userAgent,
+                    "Cookie" to cookie + language
+            ))
         } ?: throw TimeoutException("Could not retrieve body from YouTube within $timeout ms")
 
         val matchedData =
